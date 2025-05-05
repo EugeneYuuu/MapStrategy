@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:layout_marginTop="10dp"
+  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <LinearLayout
+    android:id="@+id/ll_search_view"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingHorizontal="10dp"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <ImageView
+      android:id="@+id/iv_back"
+      android:layout_width="30dp"
+      android:layout_height="30dp"
+      android:layout_marginEnd="5dp"
+      android:src="@drawable/icon_back" />
+
+    <androidx.appcompat.widget.SearchView
+      android:id="@+id/search_view"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_gravity="center_vertical"
+      android:background="@drawable/bg_corner_8dp_grey"
+      android:imeOptions="actionSearch"
+      android:inputType="textCapWords"
+      android:singleLine="true"
+      style="@style/Widget.AppCompat.SearchView"
+      android:textColor="@color/white"
+      android:textColorHint="@color/white"
+      app:queryHint="请输入关键字"/>
+  </LinearLayout>
+
+  <androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/recycler_view"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/ll_search_view"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
