@@ -1,6 +1,5 @@
 *.iml
 .gradle
-gradle/
 map-strategy.keystore
 .idea
 /local.properties

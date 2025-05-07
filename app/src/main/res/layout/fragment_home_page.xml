@@ -16,6 +16,7 @@
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
     app:layout_constraintVertical_bias="1.0" />
+
   <com.eugene.mapstrategy.view.DrawView
     android:id="@+id/draw_view"
     android:layout_width="0dp"

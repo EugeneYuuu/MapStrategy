@@ -51,11 +51,9 @@ class CircleView @JvmOverloads constructor(
         val centerX = width / 2f
         val centerY = height / 2f
 
-        // Draw the circle
         paint.color = outerColor
         canvas.drawCircle(centerX, centerY, outerRadius, paint)
 
-        // Draw the center
         paint.color = innerColor
         canvas.drawCircle(centerX, centerY, innerRadius / 2, paint)
     }

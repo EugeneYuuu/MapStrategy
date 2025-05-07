@@ -24,7 +24,6 @@ class ColorView (
   private val ivCircle: ImageView
 
   init {
-    // 使用 LayoutInflater 将布局文件膨胀并添加到当前视图中
     LayoutInflater.from(context).inflate(R.layout.view_color, this, true)
     ibColor = findViewById(R.id.ib_color)
     ivCircle = findViewById(R.id.iv_circle)

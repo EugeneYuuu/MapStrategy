@@ -59,7 +59,9 @@ fun Double.roundTo(decimal: Int) =
 fun String.toColor() =
   Color.parseColor(this)
 
-// 定义一个扩展函数，用于将 Drawable 转换为 Bitmap
+/**
+ * 用于将 Drawable 转换为 Bitmap
+ */
 fun Drawable.toBitmap(): Bitmap {
   if (this is BitmapDrawable) {
     return this.bitmap
@@ -70,8 +72,9 @@ fun Drawable.toBitmap(): Bitmap {
   draw(canvas)
   return bitmap
 }
-
-// 定义一个扩展函数，用于缩放 Bitmap
+/**
+ * 用于缩放 Bitmap
+ */
 fun Bitmap.scaleBitmap(newWidth: Int, newHeight: Int): Bitmap {
   return Bitmap.createScaledBitmap(this, newWidth, newHeight, true)
 }

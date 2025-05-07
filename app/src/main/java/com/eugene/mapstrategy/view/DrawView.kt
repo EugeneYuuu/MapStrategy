@@ -9,18 +9,12 @@ import android.graphics.Paint.Join
 import android.graphics.Paint.Style.STROKE
 import android.graphics.Path
 import android.graphics.Point
-import android.os.Handler
-import android.os.HandlerThread
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
-import androidx.compose.ui.geometry.times
 import com.amap.api.maps.AMap
-import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.MapView
-import com.amap.api.maps.Projection
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.Polyline
 import com.amap.api.maps.model.PolylineOptions
@@ -31,6 +25,7 @@ import com.eugene.mapstrategy.utils.CatmullRom
 import com.eugene.mapstrategy.utils.Constants.LARGE_SCALE
 import com.eugene.mapstrategy.utils.Constants.MIDDLE_SCALE
 import com.eugene.mapstrategy.utils.Constants.SMALL_SCALE
+import com.eugene.mapstrategy.utils.MSThreadPool
 import com.eugene.mapstrategy.utils.TUtil
 import com.eugene.mapstrategy.utils.gones
 import com.eugene.mapstrategy.utils.isVisible
@@ -39,7 +34,6 @@ import com.eugene.mapstrategy.utils.visibles
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.tencent.mmkv.MMKV
-import kotlin.math.pow
 
 /**
  * @author EugeneYu
@@ -70,8 +64,6 @@ class DrawView @JvmOverloads constructor(
   private val mmkv: MMKV? by lazy {
     MMKV.mmkvWithID("drawn_lines", MMKV.MULTI_PROCESS_MODE)
   }
-  private var handlerThread: HandlerThread? = null // 改为可空变量，在每次附加窗口时都创建新的HandlerThread实例
-  private var subHandler: Handler? = null
 
   private var isEraserMode: Boolean = false
 
@@ -182,7 +174,7 @@ class DrawView @JvmOverloads constructor(
 
   fun polylineVisibleOrGone() {
     val zoom = aMap?.cameraPosition?.zoom ?: return
-    subHandler?.post {
+    MSThreadPool.post {
       if (zoom >= SMALL_SCALE) {
         smallScalePolylines.visibles()
       } else {
@@ -213,7 +205,7 @@ class DrawView @JvmOverloads constructor(
    * 保存polylines
    */
   private fun saveLines() {
-    subHandler?.post {
+    MSThreadPool.post {
       val gson = GsonBuilder()
         .registerTypeAdapter(PolylineData::class.java, PolylineTypeAdapter())
         .registerTypeAdapter(LatLng::class.java, LatLngTypeAdapter())
@@ -244,7 +236,7 @@ class DrawView @JvmOverloads constructor(
    * 加载polylines
    */
   private fun loadLines() {
-    subHandler?.post {
+    MSThreadPool.post {
       val gson = GsonBuilder()
         .registerTypeAdapter(PolylineData::class.java, PolylineTypeAdapter())
         .registerTypeAdapter(LatLng::class.java, LatLngTypeAdapter()) // 注册LatLngTypeAdapter
@@ -330,32 +322,22 @@ class DrawView @JvmOverloads constructor(
   }
 
   private fun clearAllPolylines() {
-    val allPolylines = listOf(
-      smallScalePolylines,
-      middleScalePolylines,
-      largeScalePolylines,
-      allScalePolylines
-    )
-    allPolylines.forEach { list ->
-      list.forEach { it.remove() }
-      list.clear()
+    MSThreadPool.post {
+      val allPolylines = listOf(
+        smallScalePolylines,
+        middleScalePolylines,
+        largeScalePolylines,
+        allScalePolylines
+      )
+      allPolylines.forEach { list ->
+        list.forEach { it.remove() }
+        list.clear()
+      }
     }
   }
 
-  /**
-   * 问题：切换Fragment会导致多次调用onAttachedToWindow时，可能会尝试多次启动同一个线程；
-   *          因为HandlerThread一旦被启动后，再次调用 start() 会抛出IllegalThreadStateException
-   * 解决：在每次附加到窗口时创建新的线程实例，并在分离时释放资源。确保线程未存活时创建新实例
-   */
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
-    if (handlerThread?.isAlive != true) {
-      handlerThread?.quitSafely() // 清理旧线程
-      handlerThread = HandlerThread("drawViewThread").apply {
-        start()
-        subHandler = Handler(looper)
-      }
-    }
     //onAttachedToWindow会在onResume之后调用，放在onResume会导致子线程还没有创建就调用了loadLines
     //所以在这里加载数据
     loadLines()
@@ -364,10 +346,6 @@ class DrawView @JvmOverloads constructor(
 
   override fun onDetachedFromWindow() {
     clearAllPolylines()
-    // 释放资源
-    subHandler?.removeCallbacksAndMessages(null)
-    handlerThread?.quitSafely()
-    handlerThread = null
     super.onDetachedFromWindow()
   }
 }
